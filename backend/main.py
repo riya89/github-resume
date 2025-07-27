@@ -1286,7 +1286,10 @@
 # if __name__ == "__main__":
 #     logger.info("Starting Flask app...")
 #     app.run(host="0.0.0.0", port=8000, debug=True)
+
+
 import os
+import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import firebase_admin
@@ -1318,17 +1321,68 @@ genai.configure(api_key=GEMINI_KEY)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Firebase Admin SDK
-FIREBASE_CERT_PATH = os.getenv("FIREBASE_CERT_PATH", "firebase-adminsdk.json")
-cred = credentials.Certificate(FIREBASE_CERT_PATH)
-firebase_admin.initialize_app(cred)
+def initialize_firebase():
+    """Initialize Firebase using environment variables only"""
+    try:
+        # Check if Firebase is already initialized
+        if firebase_admin._apps:
+            logger.info("Firebase already initialized")
+            return True
+        
+        # Load Firebase credentials from environment variables
+        firebase_project_id = os.getenv("FIREBASE_PROJECT_ID")
+        firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
+        firebase_client_email = os.getenv("FIREBASE_CLIENT_EMAIL")
+        
+        if not (firebase_project_id and firebase_private_key and firebase_client_email):
+            raise Exception("Missing required Firebase environment variables. Please check FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL in your .env file.")
+        
+        logger.info("Loading Firebase credentials from environment variables")
+        
+        # Handle the private key formatting
+        private_key = firebase_private_key.replace('\\n', '\n')
+        
+        creds_dict = {
+            "type": os.getenv("FIREBASE_TYPE", "service_account"),
+            "project_id": firebase_project_id,
+            "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+            "private_key": private_key,
+            "client_email": firebase_client_email,
+            "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+            "auth_uri": os.getenv("FIREBASE_AUTH_URI", "https://accounts.google.com/o/oauth2/auth"),
+            "token_uri": os.getenv("FIREBASE_TOKEN_URI", "https://oauth2.googleapis.com/token"),
+            "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL", "https://www.googleapis.com/oauth2/v1/certs"),
+            "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL")
+        }
+        
+        cred = credentials.Certificate(creds_dict)
+        
+        # Initialize Firebase
+        firebase_admin.initialize_app(cred)
+        logger.info("Firebase initialized successfully")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Firebase initialization failed: {e}")
+        logger.error(traceback.format_exc())
+        return False
 
-# Initialize Firestore
-db = firestore.client()
+# Initialize Firebase
+firebase_initialized = initialize_firebase()
+
+if firebase_initialized:
+    db = firestore.client()
+    logger.info("Firestore client initialized")
+else:
+    db = None
+    logger.error("Firestore client not available")
 
 def firebase_auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not firebase_initialized:
+            return jsonify({"error": "Firebase not properly configured"}), 503
+            
         auth_header = request.headers.get('Authorization', None)
         if not auth_header:
             return jsonify({"error": "Authorization header missing"}), 401
