@@ -1251,7 +1251,7 @@ const Dashboard = ({ user }) => {
     setHistoryLoading(true);
     try {
       const token = await getIdToken(user);
-      const response = await fetch('http://localhost:8000/history', {
+      const response = await fetch('api/history', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -1304,7 +1304,7 @@ const Dashboard = ({ user }) => {
     
     try {
       const token = await getIdToken(user);
-      const response = await fetch(`http://localhost:8000/history/${itemId}`, {
+      const response = await fetch(`api/history/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1339,7 +1339,7 @@ const Dashboard = ({ user }) => {
     setHistoryLoading(true);
     try {
       const token = await getIdToken(user);
-      const response = await fetch('http://localhost:8000/history/clear', {
+      const response = await fetch('api/history/clear', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1388,7 +1388,7 @@ const Dashboard = ({ user }) => {
       setLoadingBranches(true);
       const token = await getIdToken(user);
       const response = await fetch(
-        `http://localhost:8000/get-branches/${owner}/${repo}`,
+        `api/get-branches/${owner}/${repo}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1439,7 +1439,7 @@ const Dashboard = ({ user }) => {
 
       console.log("Submitting request:", requestData);
 
-      const response = await fetch("http://localhost:8000/generate-resume-points", {
+      const response = await fetch("api/generate-resume-points", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
