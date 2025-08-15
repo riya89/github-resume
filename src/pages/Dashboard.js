@@ -61,7 +61,7 @@ const Dashboard = ({ user }) => {
     setHistoryLoading(true);
     try {
       const token = await getIdToken(user);
-      const response = await fetch('https://github-resume-production.up.railway.app/history', {
+      const response = await fetch('https://github-resume.onrender.com/history', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ const Dashboard = ({ user }) => {
     
     try {
       const token = await getIdToken(user);
-      const response = await fetch(`https://github-resume-production.up.railway.app/history/${itemId}`, {
+      const response = await fetch(`https://github-resume.onrender.com/history/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -149,7 +149,7 @@ const Dashboard = ({ user }) => {
     setHistoryLoading(true);
     try {
       const token = await getIdToken(user);
-      const response = await fetch('https://github-resume-production.up.railway.app/history/clear', {
+      const response = await fetch('https://github-resume.onrender.com/history/clear', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -198,7 +198,7 @@ const Dashboard = ({ user }) => {
       setLoadingBranches(true);
       const token = await getIdToken(user);
       const response = await fetch(
-        `https://github-resume-production.up.railway.app/get-branches/${owner}/${repo}`,
+        `https://github-resume.onrender.com/get-branches/${owner}/${repo}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -249,7 +249,7 @@ const Dashboard = ({ user }) => {
 
       console.log("Submitting request:", requestData);
 
-      const response = await fetch("https://github-resume-production.up.railway.app/generate-resume-points", {
+      const response = await fetch("https://github-resume.onrender.com/generate-resume-points", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
